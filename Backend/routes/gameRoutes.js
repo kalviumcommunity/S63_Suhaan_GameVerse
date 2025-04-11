@@ -5,12 +5,13 @@ const Game = require('../models/Game');
 // GET all games
 router.get('/', async (req, res) => {
     try {
-        const games = await Game.find();
+        const games = await Game.find().sort({ createdAt: -1 }); // Sort by newest first
         res.json(games);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
+
 
 // POST a new game
 router.post('/', async (req, res) => {
