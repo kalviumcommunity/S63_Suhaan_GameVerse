@@ -1,15 +1,25 @@
+// models/Game.js
 const mongoose = require('mongoose');
 
 const gameSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: true
+  title: { type: String, required: true },
+  genre: [String],
+  platform: [String],
+  releaseDate: Date,
+  description: String,
+  imageUrl: String,
+  reviews: [
+    {
+      user: String,
+      rating: Number,
+      comment: String,
+      date: { type: Date, default: Date.now },
     },
-    genre: String,
-    platform: String,
-    releaseDate: Date,
-    description: String,
-    coverImage: String
-}, { timestamps: true });
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 module.exports = mongoose.model('Game', gameSchema);
