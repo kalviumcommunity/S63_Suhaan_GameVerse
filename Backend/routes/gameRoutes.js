@@ -26,16 +26,7 @@ router.post('/', async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 });
-// PUT - Update a game by ID
-router.put('/:id', async (req, res) => {
-    try {
-        const game = await Game.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!game) return res.status(404).json({ message: 'Game not found' });
-        res.json(game);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-});
+
 
 router.delete('/:id', async (req, res) => {
     try {
@@ -49,6 +40,9 @@ router.delete('/:id', async (req, res) => {
     }
   });
   
+  router.copy('/:id', async (res,req) => {
+    
+  })
 
 
 module.exports = router;
