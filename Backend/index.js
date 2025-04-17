@@ -15,6 +15,10 @@ const authRoutes = require('./routes/auth');
 
 app.use('/api/auth', authRoutes);
 
+const uploadRoutes = require('./routes/upload');
+app.use('/api', uploadRoutes);
+
+
 // Routes
 const gameRoutes = require('./routes/gameRoutes');
 app.use('/api/games', gameRoutes);
