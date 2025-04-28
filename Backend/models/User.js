@@ -13,20 +13,24 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
     required: function () {
-      return !this.googleId; // required only if not signing in with Google
+      return !this.googleId;
     },
   },
   googleId: {
-    type: String, // For Google OAuth users
+    type: String,
+    default: null,
   },
   profilePic: {
     type: String,
     default: '',
   },
+  resetToken: String,
+  resetTokenExpiry: Date,
   wishlist: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -39,7 +43,9 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// Hash password before saving
+/**
+ * Hash the user's password before saving
+ */
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
@@ -52,8 +58,12 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// Compare plain password with hashed password
-userSchema.methods.comparePassword = async function (inputPassword) {
+/**
+ * Compare entered password with hashed password
+ * @param {string} inputPassword
+ * @returns {Promise<boolean>}
+ */
+userSchema.methods.comparePassword = function (inputPassword) {
   return bcrypt.compare(inputPassword, this.password);
 };
 

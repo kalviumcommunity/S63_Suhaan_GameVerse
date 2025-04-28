@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+}
+
+/* Custom styles */
+body {
+  @apply bg-black text-white font-sans min-h-screen;
+}
+
+input,
+textarea,
+select {
+  @apply bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500;
+}
+
+button {
+  @apply bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply text-white font-bold;
+}
+
+a {
+  @apply text-indigo-400 hover:text-indigo-300;
+}

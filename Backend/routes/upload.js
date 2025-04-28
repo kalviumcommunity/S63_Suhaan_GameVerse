@@ -1,16 +1,38 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const File = require('../models/File');
 const router = express.Router();
-const upload = require('../middlewares/upload');
 
-// POST endpoint for file upload
-router.post('/upload', upload.single('file'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+// Configure multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Ensure this folder exists
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
 
-  res.status(200).json({
-    message: 'File uploaded successfully',
-    filename: req.file.filename,
-    path: req.file.path,
-  });
+const upload = multer({ storage });
+
+// @route POST /upload
+router.post('/', upload.single('file'), async (req, res) => {
+  try {
+    const file = new File({
+      filename: req.file.originalname,
+      filepath: req.file.path,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      uploadedBy: req.user ? req.user._id : null,
+    });
+
+    await file.save();
+    res.status(201).json({ message: 'File uploaded and saved to DB', file });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'File upload failed', error: err });
+  }
 });
 
 module.exports = router;

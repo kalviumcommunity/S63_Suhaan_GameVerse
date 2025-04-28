@@ -1,0 +1,11 @@
+This directory contains game images for the GameVerse platform.
+
+Required images:
+- re2.jpg (Resident Evil 2)
+- sf6.jpg (Street Fighter 6)
+- diablo4.jpg (Diablo IV)
+- starfield.jpg (Starfield)
+- bg3.jpg (Baldur's Gate 3)
+- spiderman2.jpg (Spider-Man 2)
+
+Please add appropriate game cover images in this directory. 
