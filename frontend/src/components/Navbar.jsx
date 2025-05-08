@@ -5,9 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import { FaUser, FaCog, FaSignOutAlt, FaGamepad, FaSearch, FaHome, FaBars, FaTimes, FaComments, FaHeart } from 'react-icons/fa';
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user, login, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -24,10 +25,29 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    setShowDropdown(false);
-    navigate('/');
+  const handleLogin = async () => {
+    try {
+      setIsLoading(true);
+      await login();
+      navigate('/');
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      setIsLoading(true);
+      await logout();
+      setShowDropdown(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isActive = (path) => {
@@ -112,8 +132,12 @@ const Navbar = () => {
                   onClick={() => setShowDropdown(!showDropdown)}
                   className="flex items-center space-x-2 bg-gradient-to-r from-[#b91c1c]/80 to-[#ef4444]/80 hover:from-[#b91c1c]/90 hover:to-[#ef4444]/90 text-white px-4 py-2 rounded-lg transition-all duration-300 border border-[#b91c1c]/40"
                 >
-                  <FaUser className="text-gray-300" />
-                  <span>{user?.username || 'Profile'}</span>
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt="Profile" className="w-6 h-6 rounded-full" />
+                  ) : (
+                    <FaUser className="text-gray-300" />
+                  )}
+                  <span>{user.displayName || 'Profile'}</span>
                 </motion.button>
 
                 <AnimatePresence>
