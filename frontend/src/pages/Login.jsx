@@ -12,6 +12,7 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -48,9 +49,20 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Implement Google login functionality
-    console.log('Google login clicked');
+  const handleGoogleLogin = async () => {
+    try {
+      setIsGoogleLoading(true);
+      const userCredential = await login();
+      if (userCredential) {
+        toast.success('Google login successful!');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+      toast.error('Google login failed. Please try again.');
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -155,10 +167,22 @@ const Login = () => {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full py-3 px-4 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-medium transition-colors duration-300 flex items-center justify-center"
+              disabled={isGoogleLoading}
+              className={`w-full py-3 px-4 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-medium transition-colors duration-300 flex items-center justify-center ${
+                isGoogleLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              <FaGoogle className="mr-2" />
-              Continue with Google
+              {isGoogleLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                  Connecting...
+                </div>
+              ) : (
+                <>
+                  <FaGoogle className="mr-2" />
+                  Continue with Google
+                </>
+              )}
             </button>
           </form>
 

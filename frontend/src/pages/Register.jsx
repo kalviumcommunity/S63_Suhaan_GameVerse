@@ -17,6 +17,7 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -61,6 +62,22 @@ const Register = () => {
       toast.error(err.response?.data?.error || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    try {
+      setIsGoogleLoading(true);
+      const userCredential = await login();
+      if (userCredential) {
+        toast.success('Google sign up successful!');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Google sign up error:', error);
+      toast.error('Google sign up failed. Please try again.');
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -205,10 +222,23 @@ const Register = () => {
 
             <button
               type="button"
-              className="w-full py-3 px-4 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-medium transition-colors duration-300 flex items-center justify-center"
+              onClick={handleGoogleSignUp}
+              disabled={isGoogleLoading}
+              className={`w-full py-3 px-4 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-medium transition-colors duration-300 flex items-center justify-center ${
+                isGoogleLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              <FaGoogle className="mr-2" />
-              Continue with Google
+              {isGoogleLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                  Connecting...
+                </div>
+              ) : (
+                <>
+                  <FaGoogle className="mr-2" />
+                  Continue with Google
+                </>
+              )}
             </button>
           </form>
 
