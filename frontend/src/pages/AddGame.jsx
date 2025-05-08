@@ -41,12 +41,12 @@ const AddGame = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex justify-center items-center p-8">
+    <div className="min-h-screen bg-gradient-to-b from-black to-[#1a1a1a] text-white flex justify-center items-center p-8">
       <form
         onSubmit={handleSubmit}
-        className="bg-gray-800 p-8 rounded-lg w-full max-w-xl shadow-md space-y-4"
+        className="bg-[#181818] p-8 rounded-lg w-full max-w-xl shadow-md space-y-4"
       >
-        <h2 className="text-2xl font-bold mb-4 text-center">Add New Game</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center text-[#b91c1c]">Add New Game</h2>
 
         <input
           type="text"
@@ -108,7 +108,7 @@ const AddGame = () => {
 
         <button
           type="submit"
-          className="w-full bg-indigo-600 hover:bg-indigo-700 p-3 rounded font-semibold"
+          className="w-full bg-[#b91c1c] hover:bg-[#991b1b] p-3 rounded font-semibold text-[#dc2626]"
         >
           Add Game
         </button>

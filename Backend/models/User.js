@@ -8,6 +8,15 @@ const userSchema = new mongoose.Schema({
     unique: true,
     trim: true,
   },
+  displayName: {
+    type: String,
+    trim: true,
+  },
+  bio: {
+    type: String,
+    trim: true,
+    maxLength: 500,
+  },
   email: {
     type: String,
     required: true,
@@ -37,6 +46,26 @@ const userSchema = new mongoose.Schema({
       ref: 'Game',
     },
   ],
+  settings: {
+    notifications: {
+      type: Boolean,
+      default: true,
+    },
+    emailUpdates: {
+      type: Boolean,
+      default: true,
+    },
+    language: {
+      type: String,
+      default: 'English',
+      enum: ['English', 'Spanish', 'French', 'German'],
+    },
+    privacy: {
+      type: String,
+      default: 'Public',
+      enum: ['Public', 'Friends', 'Private'],
+    },
+  },
   createdAt: {
     type: Date,
     default: Date.now,

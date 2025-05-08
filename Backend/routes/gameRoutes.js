@@ -3,7 +3,7 @@ const router = express.Router();
 const Game = require('../models/Game');
 
 // GET all games
-router.get('/', async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const games = await Game.find().sort({ createdAt: -1 }); // Sort by newest first
         res.json(games);

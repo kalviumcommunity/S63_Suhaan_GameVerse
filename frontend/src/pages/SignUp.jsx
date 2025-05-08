@@ -24,7 +24,7 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-black to-[#1a1a1a] text-white p-4">
       <div className="w-full max-w-md">
         <h1 className="text-4xl font-bold text-center mb-2">GameVerse</h1>
         <p className="text-gray-400 text-center mb-8">Your gaming collection starts here</p>

@@ -103,9 +103,30 @@ export const getGamesByGenre = async (genreId, page = 1) => {
   return handleResponse(response);
 };
 
+export const getGamesByPlatform = async (platformId, page = 1) => {
+  const response = await fetch(
+    `${BASE_URL}/games?key=${RAWG_API_KEY}&platforms=${platformId}&page=${page}&page_size=20`
+  );
+  return handleResponse(response);
+};
+
+export const getGamesByRating = async (minRating, page = 1) => {
+  const response = await fetch(
+    `${BASE_URL}/games?key=${RAWG_API_KEY}&metacritic=${minRating},100&page=${page}&page_size=20`
+  );
+  return handleResponse(response);
+};
+
 export const getGenres = async () => {
   const response = await fetch(
     `${BASE_URL}/genres?key=${RAWG_API_KEY}`
+  );
+  return handleResponse(response);
+};
+
+export const getPlatforms = async () => {
+  const response = await fetch(
+    `${BASE_URL}/platforms?key=${RAWG_API_KEY}`
   );
   return handleResponse(response);
 }; 

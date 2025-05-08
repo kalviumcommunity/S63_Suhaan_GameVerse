@@ -1,9 +1,20 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { useParams } from 'react-router-dom';
-import { FaStar, FaWindows, FaPlaystation, FaXbox, FaShoppingCart, FaHeart, FaPlay, FaSteam } from 'react-icons/fa';
+import { FaStar, FaHeart, FaPlay, FaSteam } from 'react-icons/fa';
 import { getGameDetails, getGameScreenshots, getGameTrailers } from '../services/rawgApi';
 import { addToWishlist, removeFromWishlist, isInWishlist } from '../services/wishlistService';
+import ReviewSection from '../components/ReviewSection';
+import GamePrice from '../components/GamePrice';
+
+const fadeIn = {
+  initial: { opacity: 0, y: 40 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.6, -0.05, 0.01, 0.99] } },
+};
+const buttonVariants = {
+  whileHover: { scale: 1.05, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' },
+  whileTap: { scale: 0.98 },
+};
 
 const GameDetails = () => {
   const { id } = useParams();
@@ -13,6 +24,10 @@ const GameDetails = () => {
   const [trailers, setTrailers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [steamAppId, setSteamAppId] = useState(null);
+  const currentUser = JSON.parse(localStorage.getItem('user')) || null;
+  const [showModal, setShowModal] = useState(false);
+  const [modalImg, setModalImg] = useState(null);
+  const heroControls = useAnimation();
 
   useEffect(() => {
     const fetchGameData = async () => {
@@ -27,29 +42,15 @@ const GameDetails = () => {
         setScreenshots(screenshotsData.results);
         setTrailers(trailersData.results);
         setIsWishlisted(isInWishlist(parseInt(id)));
-
-        // Debug log
-        console.log('Game data:', gameData);
-        console.log('Game stores:', gameData.stores);
-
-        // Extract Steam App ID from store URL if available
         if (gameData.stores && gameData.stores.length > 0) {
           const steamStore = gameData.stores.find(store => 
             store.store?.name?.toLowerCase() === 'steam' ||
             store.url?.toLowerCase().includes('steampowered.com')
           );
-          
-          console.log('Steam store found:', steamStore); // Debug log
-
           if (steamStore?.url) {
             const steamUrl = steamStore.url;
-            console.log('Steam URL:', steamUrl); // Debug log
             const steamIdMatch = steamUrl.match(/\/app\/(\d+)/);
-            if (steamIdMatch) {
-              const steamId = steamIdMatch[1];
-              console.log('Steam ID found:', steamId); // Debug log
-              setSteamAppId(steamId);
-            }
+            if (steamIdMatch) setSteamAppId(steamIdMatch[1]);
           }
         }
       } catch (error) {
@@ -58,18 +59,24 @@ const GameDetails = () => {
         setLoading(false);
       }
     };
-
     fetchGameData();
   }, [id]);
 
-  // Debug log for steamAppId state
   useEffect(() => {
-    console.log('Current Steam App ID:', steamAppId);
-  }, [steamAppId]);
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, 0);
+      });
+    }, 50);
+  }, [id]);
 
+  // Cinematic hero parallax/zoom effect
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    heroControls.start({ scale: 1.08, opacity: 1 });
+    setTimeout(() => {
+      heroControls.start({ scale: 1, opacity: 1, transition: { duration: 2, ease: [0.6, -0.05, 0.01, 0.99] } });
+    }, 400);
+  }, [game, heroControls]);
 
   const handleWishlistClick = () => {
     if (isWishlisted) {
@@ -90,222 +97,235 @@ const GameDetails = () => {
   if (loading || !game) {
     return (
       <div className="min-h-screen bg-black text-white flex justify-center items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
+  // Animated rating bars
+  const total = game.ratings.reduce((sum, r) => sum + r.count, 0);
+  const colors = ["#38bdf8", "#6366f1", "#facc15", "#f472b6", "#a3e635"];
+
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Hero Section */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="relative h-[70vh]"
-      >
-        <div className="absolute inset-0">
-          <img 
-            src={game.background_image}
-            alt={game.name}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 p-8">
-          <div className="container mx-auto">
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="flex items-end gap-6"
-            >
-              <img 
-                src={screenshots[0]?.image || game.background_image}
-                alt={game.name}
-                className="w-48 h-64 object-cover rounded-lg shadow-2xl"
-              />
-              <div className="flex-1">
-                <h1 className="text-6xl font-bold mb-4">{game.name}</h1>
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
-                    <FaStar className="text-yellow-500" />
-                    <span className="text-xl font-bold">{game.rating}</span>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleWishlistClick}
-                    className={`${
-                      isWishlisted ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-800 hover:bg-gray-700'
-                    } px-4 py-2 rounded-full flex items-center gap-2 transition-colors duration-200`}
-                  >
-                    {isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                    <FaHeart className={isWishlisted ? "text-white" : "text-gray-400"} />
-                  </motion.button>
-                  {steamAppId && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleBuyOnSteam}
-                      className="bg-[#171a21] hover:bg-[#1b2838] px-6 py-2 rounded-full flex items-center gap-2 text-white"
-                    >
-                      <FaSteam className="text-white" />
-                      <span>Buy on Steam</span>
-                    </motion.button>
-                  )}
-                  {trailers.length > 0 && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-full flex items-center gap-2"
-                      onClick={() => window.open(trailers[0].data.max, '_blank')}
-                    >
-                      Watch Trailer
-                      <FaPlay />
-                    </motion.button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Content Section */}
-      <div className="container mx-auto px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              <h2 className="text-2xl font-bold mb-4">About</h2>
-              <div 
-                className="text-gray-300 mb-8 space-y-4"
-                dangerouslySetInnerHTML={{ __html: game.description }}
-              />
-
-              {screenshots.length > 0 && (
-                <>
-                  <h2 className="text-2xl font-bold mb-4">Screenshots</h2>
-                  <div className="grid grid-cols-2 gap-4 mb-8">
-                    {screenshots.slice(0, 4).map((screenshot, index) => (
-                      <motion.img
-                        key={screenshot.id}
-                        src={screenshot.image}
-                        alt={`Screenshot ${index + 1}`}
-                        className="rounded-lg w-full h-48 object-cover cursor-pointer"
-                        whileHover={{ scale: 1.05 }}
-                        onClick={() => window.open(screenshot.image, '_blank')}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </motion.div>
-          </div>
-
-          {/* Sidebar */}
-          <motion.div
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="lg:col-span-1"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-gradient-to-b from-black via-[#1a1a1a] to-[#181818] text-white font-['Space_Grotesk']"
+    >
+      {/* Cinematic Hero Banner */}
+      <section className="relative h-[70vh] w-full flex items-center justify-center overflow-hidden">
+        <motion.img
+          src={game.background_image}
+          alt={game.name}
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          initial={{ scale: 1.12, opacity: 0 }}
+          animate={heroControls}
+          transition={{ duration: 1.8, ease: [0.6, -0.05, 0.01, 0.99] }}
+        />
+        {/* Vignette and dark overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-[#1a1a1a]/70 to-transparent z-10" />
+        <div className="absolute inset-0 pointer-events-none z-20" style={{boxShadow:'inset 0 0 150px 30px #000'}} />
+        <motion.div
+          className="relative z-30 flex flex-col items-center justify-center w-full h-full"
+          initial="initial"
+          animate="animate"
+        >
+          <motion.h1
+            className="text-5xl md:text-7xl font-bold font-['Orbitron'] text-center mb-6 drop-shadow-[0_2px_16px_rgba(0,0,0,0.6)] text-white"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 1 }}
           >
-            <div className="bg-gray-900 rounded-lg p-6">
-              <h2 className="text-xl font-bold mb-4">Game Info</h2>
-              <div className="space-y-4 text-gray-300">
-                <div>
-                  <h3 className="text-gray-400 text-sm">Platforms</h3>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {game.platforms.map(({ platform }) => (
-                      <span key={platform.id} className="bg-gray-800 px-3 py-1 rounded-full text-sm">
-                        {platform.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-gray-400 text-sm">Genres</h3>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {game.genres.map(genre => (
-                      <span key={genre.id} className="bg-gray-800 px-3 py-1 rounded-full text-sm">
-                        {genre.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-gray-400 text-sm">Release Date</h3>
-                  <p>{new Date(game.released).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <h3 className="text-gray-400 text-sm">Developer</h3>
-                  <p>{game.developers?.map(dev => dev.name).join(', ')}</p>
-                </div>
-                <div>
-                  <h3 className="text-gray-400 text-sm">Publisher</h3>
-                  <p>{game.publishers?.map(pub => pub.name).join(', ')}</p>
-                </div>
-                {steamAppId && (
-                  <div>
-                    <h3 className="text-gray-400 text-sm">Steam Store</h3>
-                    <motion.a
-                      whileHover={{ scale: 1.02 }}
-                      href={`https://store.steampowered.com/app/${steamAppId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-blue-400 hover:text-blue-300 mt-1"
-                    >
-                      <FaSteam />
-                      View on Steam
-                    </motion.a>
-                  </div>
-                )}
-                {game.website && (
-                  <div>
-                    <h3 className="text-gray-400 text-sm">Website</h3>
-                    <a
-                      href={game.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300"
-                    >
-                      Visit Official Website
-                    </a>
-                  </div>
-                )}
-              </div>
-
-              {game.ratings_count > 0 && (
-                <div className="mt-8">
-                  <h2 className="text-xl font-bold mb-4">Rating Breakdown</h2>
-                  <div className="space-y-2">
-                    {game.ratings.map(rating => (
-                      <div key={rating.id} className="flex items-center gap-2">
-                        <span className="w-20">{rating.title}</span>
-                        <div className="flex-1 bg-gray-800 h-4 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${rating.percent}%` }}
-                            transition={{ duration: 1, delay: 0.8 }}
-                            className="h-full bg-yellow-500"
-                          />
-                        </div>
-                        <span className="w-12 text-right">{Math.round(rating.percent)}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {game.name}
+          </motion.h1>
+          <motion.div className="flex flex-wrap items-center justify-center gap-4 mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.7 }}>
+            <span className="flex items-center gap-2 bg-white/10 px-6 py-3 rounded-full text-xl font-bold text-white shadow-md">
+              <FaStar className="text-[#dc2626]" />
+              {game.rating}
+            </span>
+            <span className="text-base text-white/90 font-['Inter']">{game.genres.map(g => g.name).join(', ')}</span>
+            <span className="text-base text-white/70 font-['Inter']">{game.released && new Date(game.released).toLocaleDateString()}</span>
           </motion.div>
+          <motion.div className="flex flex-wrap gap-6 justify-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.7 }}>
+            <motion.button
+              variants={buttonVariants}
+              whileHover="whileHover"
+              whileTap="whileTap"
+              onClick={handleWishlistClick}
+              className={`px-8 py-4 rounded-lg font-semibold flex items-center gap-2 transition-colors duration-200 shadow-lg text-lg ${isWishlisted ? 'bg-[#991b1b] hover:bg-[#7f1d1d]' : 'bg-white/10 hover:bg-white/20'} ring-1 ring-white/10 focus:ring-2 focus:ring-white/20`}
+              style={{boxShadow:'0 0 8px 1px rgba(0,0,0,0.2)'}}
+            >
+              <FaHeart className="text-white" />
+              {isWishlisted ? 'Wishlisted' : 'Add to Wishlist'}
+            </motion.button>
+            {steamAppId && (
+              <motion.button
+                variants={buttonVariants}
+                whileHover="whileHover"
+                whileTap="whileTap"
+                onClick={handleBuyOnSteam}
+                className="bg-white/10 hover:bg-white/20 px-8 py-4 rounded-lg flex items-center gap-2 text-white font-semibold shadow-lg text-lg ring-1 ring-white/10 focus:ring-2 focus:ring-white/20"
+                style={{boxShadow:'0 0 8px 1px rgba(0,0,0,0.2)'}}
+              >
+                <FaSteam /> Buy on Steam
+              </motion.button>
+            )}
+            {trailers.length > 0 && (
+              <motion.button
+                variants={buttonVariants}
+                whileHover="whileHover"
+                whileTap="whileTap"
+                className="bg-white/10 hover:bg-white/20 px-8 py-4 rounded-lg flex items-center gap-2 text-white font-semibold shadow-lg text-lg ring-1 ring-white/10 focus:ring-2 focus:ring-white/20"
+                style={{boxShadow:'0 0 8px 1px rgba(0,0,0,0.2)'}}
+                onClick={() => window.open(trailers[0].data.max, '_blank')}
+              >
+                <FaPlay /> Watch Trailer
+              </motion.button>
+            )}
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Floating Info Card */}
+      <motion.section
+        className="relative z-30 max-w-5xl mx-auto -mt-24 mb-16"
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
+      >
+        <div className="bg-[#181818]/80 backdrop-blur-xl rounded-xl shadow-lg p-8 flex flex-col md:flex-row gap-8 border border-white/10">
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold mb-4 font-['Orbitron'] text-white">About</h2>
+            <div className="text-white/70 mb-4 text-lg font-['Inter']" dangerouslySetInnerHTML={{ __html: game.description }} />
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <div>
+                <span className="block text-xs text-white/50">Release</span>
+                <span className="font-['Orbitron'] text-base text-white/70">{new Date(game.released).toLocaleDateString()}</span>
+              </div>
+              <div>
+                <span className="block text-xs text-white/50">Platforms</span>
+                <span className="font-['Inter'] text-base text-white/70">{game.platforms.map(({ platform }) => platform.name).join(', ')}</span>
+              </div>
+              <div>
+                <span className="block text-xs text-white/50">Developer</span>
+                <span className="font-['Inter'] text-base text-white/70">{game.developers?.map(dev => dev.name).join(', ')}</span>
+              </div>
+              <div>
+                <span className="block text-xs text-white/50">Publisher</span>
+                <span className="font-['Inter'] text-base text-white/70">{game.publishers?.map(pub => pub.name).join(', ')}</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-4 min-w-[220px]">
+            <GamePrice gameTitle={game.name} gameId={game.id} />
+            {steamAppId && (
+              <motion.a
+                whileHover={{ scale: 1.02 }}
+                href={`https://store.steampowered.com/app/${steamAppId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-white/70 hover:text-white mt-1 font-['Inter'] text-base"
+              >
+                <FaSteam />
+                View on Steam
+              </motion.a>
+            )}
+            {game.website && (
+              <a
+                href={game.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/70 hover:text-white font-['Inter'] text-base"
+              >
+                Visit Official Website
+              </a>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      </motion.section>
+
+      {/* Screenshots Gallery */}
+      {screenshots.length > 0 && (
+        <motion.section className="max-w-6xl mx-auto mb-16" initial="initial" animate="animate">
+          <h2 className="text-2xl font-bold mb-6 font-['Orbitron'] text-white">Screenshots</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {screenshots.slice(0, 9).map((screenshot, index) => (
+              <motion.div
+                key={screenshot.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+                className="relative aspect-video rounded-xl overflow-hidden group cursor-pointer"
+                onClick={() => { setShowModal(true); setModalImg(screenshot.image); }}
+              >
+                <motion.img
+                  src={screenshot.image}
+                  alt={`Screenshot ${index + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="text-white text-lg font-semibold">Click to view</div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          {/* Modal for screenshot preview */}
+          <AnimatePresence>
+            {showModal && (
+              <motion.div
+                className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowModal(false)}
+              >
+                <motion.img
+                  src={modalImg}
+                  alt="Screenshot Preview"
+                  className="max-w-3xl max-h-[80vh] rounded-xl shadow-2xl border border-white/20"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  onClick={e => e.stopPropagation()}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.section>
+      )}
+
+      {/* Animated Ratings */}
+      {game.ratings_count > 0 && (
+        <motion.section className="max-w-4xl mx-auto mb-16" initial="initial" animate="animate">
+          <h2 className="text-2xl font-bold mb-6 font-['Orbitron'] text-white">Rating Breakdown</h2>
+          <div className="space-y-6">
+            {game.ratings.map((rating, i) => (
+              <div key={rating.id} className="flex items-center gap-4">
+                <span className="w-32 text-left font-['Space_Grotesk'] text-base text-white/70">{rating.title}</span>
+                <div className="flex-1 h-6 rounded-full bg-[#181818] overflow-hidden relative">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(rating.count / total) * 100}%` }}
+                    transition={{ duration: 1, delay: 0.5 + i * 0.2 }}
+                    className="h-6 rounded-full shadow-md"
+                    style={{ background: `linear-gradient(90deg, #dc2626, #991b1b 80%)` }}
+                  />
+                </div>
+                <span className="w-12 text-right font-['Orbitron'] text-lg text-white/70">{Math.round((rating.count / total) * 100)}%</span>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+      )}
+
+      {/* Reviews Section */}
+      <motion.section className="max-w-4xl mx-auto mb-24" initial="initial" animate="animate">
+        <ReviewSection gameId={game.id || game._id} currentUser={currentUser} />
+      </motion.section>
+    </motion.div>
   );
 };
 

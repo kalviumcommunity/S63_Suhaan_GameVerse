@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import './App.css';
@@ -15,13 +16,16 @@ import Profile from './pages/Profile';
 import Discussion from './pages/Discussions';
 import AddGame from './pages/AddGame';
 import SearchPage from './pages/SearchPage';
+import Settings from './pages/Settings';
 import ScrollToTop from './components/ScrollToTop';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect } from 'react';
 
 function AnimatedRoutes() {
   const location = useLocation();
   return (
     <AnimatePresence mode="wait">
+      <ScrollToTop />
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
@@ -40,24 +44,31 @@ function AnimatedRoutes() {
         <Route path="/profile" element={<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}><Profile /></motion.div>} />
         <Route path="/discussions" element={<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}><Discussion /></motion.div>} />
         <Route path="/add-game" element={<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}><AddGame /></motion.div>} />
+        <Route path="/settings" element={<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}><Settings /></motion.div>} />
       </Routes>
     </AnimatePresence>
   );
 }
 
 function App() {
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
   return (
-    <AuthProvider>
-      <Router>
-        <ScrollToTop />
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <div className="flex-1">
-            <AnimatedRoutes />
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <div className="flex-1 pt-16">
+              <AnimatedRoutes />
+            </div>
           </div>
-        </div>
-      </Router>
-    </AuthProvider>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

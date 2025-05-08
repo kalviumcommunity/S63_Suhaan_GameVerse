@@ -39,11 +39,19 @@ const authRoutes = require('./routes/auth');
 const uploadRoutes = require('./routes/upload');
 const gameRoutes = require('./routes/gameRoutes');
 const discussionsRoutes = require('./routes/discussions');
+const reviewRoutes = require('./routes/reviewRoutes');
+const userRoutes = require('./routes/users');
+const settingsRoutes = require('./routes/settings');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/discussions', discussionsRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/uploads', express.static('uploads'));
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

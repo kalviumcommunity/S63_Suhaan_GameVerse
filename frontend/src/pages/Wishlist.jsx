@@ -15,7 +15,7 @@ const Wishlist = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white px-4 sm:px-0">
+    <div className="min-h-screen bg-gradient-to-b from-black to-[#1a1a1a] text-white px-4 sm:px-0">
       <div className="max-w-4xl mx-auto py-8">
         <h2 className="text-3xl font-bold mb-1">My Wishlist</h2>
         <p className="text-gray-400 mb-8">{wishlist.length} game{wishlist.length !== 1 ? 's' : ''}</p>
@@ -24,7 +24,7 @@ const Wishlist = () => {
             <div className="text-gray-500 text-center py-16">No games in your wishlist yet.</div>
           )}
           {wishlist.map((game) => (
-            <div key={game.id} className="flex bg-[#18181b] rounded-lg overflow-hidden shadow-md relative group hover:shadow-lg transition-shadow">
+            <div key={game.id} className="flex bg-[#181818] rounded-lg overflow-hidden shadow-md relative group hover:shadow-lg transition-shadow">
               <img src={game.background_image} alt={game.name} className="w-40 h-48 object-cover flex-shrink-0" />
               <div className="flex-1 flex flex-col justify-between p-6">
                 <div>

@@ -41,7 +41,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-black to-[#1a1a1a] text-white overflow-hidden">
       <div className="animate-fadeIn">
         <h1 className="text-4xl font-bold mb-2 text-center hover:scale-105 transition-transform duration-300">
           GameVerse
@@ -51,17 +51,17 @@ const ResetPassword = () => {
         </p>
       </div>
 
-      <div className="bg-[#1a1a1a] p-8 rounded-lg shadow-md w-96 animate-slideUpAndFade hover:shadow-purple-600/20 transition-shadow duration-300">
+      <div className="bg-[#181818] p-8 rounded-lg shadow-md w-96 animate-slideUpAndFade hover:shadow-purple-600/20 transition-shadow duration-300">
         <h2 className="text-2xl font-bold mb-6 text-center">Reset Password</h2>
 
         {error && (
-          <div className="bg-red-500 text-white p-3 rounded mb-4 text-center animate-shake">
+          <div className="bg-[#b91c1c]/30 text-[#dc2626] p-3 rounded mb-4 text-center animate-shake">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-green-500 text-white p-3 rounded mb-4 text-center animate-slideUp">
+          <div className="bg-[#b91c1c] text-[#dc2626] p-3 rounded mb-4 text-center animate-slideUp">
             {success}
           </div>
         )}
